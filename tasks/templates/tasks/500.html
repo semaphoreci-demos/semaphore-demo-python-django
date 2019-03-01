@@ -1,0 +1,21 @@
+{% extends 'tasks/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="error-template">
+            <h1>
+                Oops!</h1>
+            <h2>
+                500 Server Error</h2>
+            <div class="error-details">
+                Something went wrong, Please contact support team.. !!
+            </div>
+            <div class="error-actions">
+                <a href="{% url 'tasks:tasks_list' %}" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-home"></span>
+                    Take Me to the Task List Page </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

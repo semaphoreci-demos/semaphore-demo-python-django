@@ -1,0 +1,103 @@
+# Use the latest stable version of Semaphore 2.0 YML syntax:
+version: v1.0
+
+# Name your pipeline. In case you connect multiple pipelines with promotions,
+# the name will help you differentiate between, for example, a CI build phase
+# and delivery phases.
+name: Semaphore Python / Django Example Pipeline
+
+# An agent defines the environment in which your code runs.
+# It is a combination of one of available machine types and operating
+# system images.
+# See https://docs.semaphoreci.com/article/20-machine-types
+# and https://docs.semaphoreci.com/article/32-ubuntu-1804-image
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+
+# Blocks are the heart of a pipeline and are executed sequentially.
+# Each block has a task that defines one or more jobs. Jobs define the
+# commands to execute.
+# See https://docs.semaphoreci.com/article/62-concepts
+blocks:
+  - name: "Install Dependencies"
+    task:
+      prologue:
+        commands:
+          - sem-version python 3.7
+          - sudo apt-get update && sudo apt-get install -y python3-dev && sudo apt-get install default-libmysqlclient-dev
+      jobs:
+        - name: pip
+          commands:
+            - checkout
+            - cache restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt),requirements-$SEMAPHORE_GIT_BRANCH-,requirements-master-
+            - pip download --cache-dir .pip_cache -r requirements.txt
+            - cache store requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt) .pip_cache
+
+  - name: "Run Code Analysis"
+    task:
+      prologue:
+        commands:
+          - sem-version python 3.7
+          - checkout
+          - cache restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
+          - pip install -r requirements.txt --cache-dir .pip_cache
+      jobs:
+        - name: Pylint
+          commands:
+            # list out files that are in directory and working tree
+            # grep -v will exclude the files being considered for pylint
+            # grep -E will matches files having .py extension
+            # This command will help to pass required python files to pylint along with pylint_djanog plugin
+            # Pylint with -E option will display only if there is any error
+            - git ls-files | grep -v 'migrations' | grep -v 'settings.py' | grep -v 'manage.py' | grep -E '.py$' |
+              xargs pylint -E --load-plugins=pylint_django
+
+  - name: "Run Unit Tests"
+    task:
+      prologue:
+        commands:
+          - sem-version python 3.7
+          - sem-service start mysql
+          - checkout
+          - cache restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
+          - pip install -r requirements.txt --cache-dir .pip_cache
+      jobs:
+        - name: Model Test
+          commands:
+            - python manage.py test tasks.tests.test_models
+        - name: View Test
+          commands:
+            - python manage.py test tasks.tests.test_views
+
+  - name: "Run Browser Tests"
+    task:
+      env_vars:
+        - name: DB_NAME
+          value: 'pydjango'
+      prologue:
+        commands:
+          - sem-version python 3.7
+          - sem-service start mysql
+          - sudo apt-get install -y -qq mysql-client
+          - mysql --host=0.0.0.0 -uroot -e "create database $DB_NAME"
+          - checkout
+          - cache restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
+          - pip install -r requirements.txt --cache-dir .pip_cache
+          - nohup python manage.py runserver &
+      jobs:
+        - name: Browser Test
+          commands:
+            - python manage.py test tasks.tests.test_browser
+
+  - name: "Run Security Tests"
+    task:
+      jobs:
+        - name: Deployment Checklist
+          commands:
+           - checkout
+           - sem-version python 3.7
+           - cache restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
+           - pip install -r requirements.txt --cache-dir .pip_cache
+           - python manage.py check --deploy --fail-level ERROR
