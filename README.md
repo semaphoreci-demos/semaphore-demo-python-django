@@ -50,7 +50,7 @@ Fork this repository and use it to [create a project](https://docs.semaphoreci.c
    ```
 The CI pipeline will look like this:
 
-![pipeline](https://github.com/virusarena/semaphore-demo-python-django/blob/master/pydjango_ci_integration/pipepline.png)
+![pipeline](https://github.com/semaphoreci-demos/semaphore-demo-python-django/blob/master/pydjango_ci_integration/pipepline.png)
 
 The example pipeline contains 5 blocks:
 
