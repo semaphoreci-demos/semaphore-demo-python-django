@@ -34,6 +34,7 @@ blocks:
           # See https://docs.semaphoreci.com/article/54-toolbox-reference#sem-version
           - sem-version python 3.7
           # Install Linux packages.
+          - sudo apt-get --allow-releaseinfo-change update
           - sudo apt-get update && sudo apt-get install -y python3-dev && sudo apt-get install default-libmysqlclient-dev
       jobs:
         - name: pip
@@ -117,6 +118,7 @@ blocks:
           # Start MySQL database.
           - sem-service start mysql
           # Install mysql client.
+          - sudo apt-get --allow-releaseinfo-change update
           - sudo apt-get install -y -qq mysql-client
           # Create an empty database.
           # We can connect to the db with root and a blank password.
