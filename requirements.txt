@@ -7,3 +7,4 @@ pylint==2.3.0
 pylint-django==2.0.6
 pylint-plugin-utils==0.5
 selenium==3.141.0
+python-dotenv==0.10.1
