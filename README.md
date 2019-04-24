@@ -39,6 +39,18 @@ test
    ```
   and visit the web browser with 'http://127.0.0.1:8000'
   
+## Environment variables
+
+The following environment variables can be set to override defaults:
+
+- `SECRET_KEY`: Django [secret key](https://docs.djangoproject.com/en/2.2/ref/settings/#secret-key).
+- `DB_ENGINE`: Django database [backend](https://docs.djangoproject.com/en/2.2/ref/databases/).
+- `DB_NAME`: database name.
+- `DB_HOST`: database hostname.
+- `DB_PORT`: database port.
+- `DB_USER`: database user.
+- `DB_PASSWORD`: database password.
+
 # CI/CD on Semaphore
 
 Fork this repository and use it to [create a project](https://docs.semaphoreci.com/article/63-your-first-project)

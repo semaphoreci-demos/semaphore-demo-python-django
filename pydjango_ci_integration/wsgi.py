@@ -13,4 +13,8 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pydjango_ci_integration.settings")
 
+# Uncomment these lines to source an environment file
+# from dotenv import load_dotenv
+# load_dotenv('/path/to/env_file')
+
 application = get_wsgi_application()
