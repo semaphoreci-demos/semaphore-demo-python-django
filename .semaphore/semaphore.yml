@@ -23,18 +23,17 @@ agent:
 blocks:
   - name: "Install Dependencies"
     task:
-      # This block install the required Linux packages
-      # as well as the python dependencies.      
+      # This block installs all the python dependencies,
+      # as well as all the required Linux packages.
       # The prologue section is always executed before each job on
       # the block.
       # See https://docs.semaphoreci.com/article/50-pipeline-yaml#prologue
       prologue:
         commands:
-          # Set the python version to 3.7.
-          # See https://docs.semaphoreci.com/article/54-toolbox-reference#sem-version
+          # Set the python version.
+          # See https://docs.semaphoreci.com/article/132-sem-service-managing-databases-and-services-on-linux
           - sem-version python 3.7
-          # Install Linux packages.
-          - sudo apt-get --allow-releaseinfo-change update
+          # Install Linux dependencies.
           - sudo apt-get update && sudo apt-get install -y python3-dev && sudo apt-get install default-libmysqlclient-dev
       jobs:
         - name: pip
@@ -45,13 +44,13 @@ blocks:
             # Restore dependencies from cache. This command will not fail in
             # case of a cache miss. In case of a cache hit, pip can use it
             # to speed up the installation.
-            # For more info on caching, see https://docs.semaphoreci.com/article/68-caching-dependencies
-            - cache restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt),requirements-$SEMAPHORE_GIT_BRANCH-,requirements-master-
-            # Install python dependencies. If not found in the cache, 
-            # pip will download the packages.
+            # For more info on caching, see https://docs.semaphoreci.com/article/149-caching
+            - cache restore
+            # Install python dependencies.
+            # If not found in the cache, pip will download them.
             - pip download --cache-dir .pip_cache -r requirements.txt
-            # Store downloaded packages for future jobs.
-            - cache store requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt) .pip_cache
+            # Persist downloaded packages for future jobs.
+            - cache store
 
   - name: "Run Code Analysis"
     task:
@@ -61,7 +60,7 @@ blocks:
           - sem-version python 3.7
           - checkout
           # At this point, the cache contains the downloaded packages ...
-          - cache restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
+          - cache restore
           # ... so pip does the installation much faster.
           - pip install -r requirements.txt --cache-dir .pip_cache
       jobs:
@@ -89,9 +88,9 @@ blocks:
           # Also https://docs.semaphoreci.com/article/54-toolbox-reference#sem-service
           - sem-service start mysql
           - checkout
-          - cache restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
+          - cache restore
           - pip install -r requirements.txt --cache-dir .pip_cache
-      # Two parallel jobs are executed.
+      # Two parallel test jobs are executed.
       jobs:
         - name: Model Test
           commands:
@@ -117,16 +116,15 @@ blocks:
           - sem-version python 3.7
           # Start MySQL database.
           - sem-service start mysql
-          # Install mysql client.
-          - sudo apt-get --allow-releaseinfo-change update
-          - sudo apt-get install -y -qq mysql-client
+          # Install mysql client
+          - sudo apt-get update && sudo apt-get install -y -qq mysql-client
           # Create an empty database.
           # We can connect to the db with root and a blank password.
           - mysql --host=0.0.0.0 -uroot -e "create database $DB_NAME"
           - checkout
-          - cache restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
+          - cache restore
           - pip install -r requirements.txt --cache-dir .pip_cache
-          # Start application server.
+          # Application is started.
           - nohup python manage.py runserver &
       jobs:
         - name: Browser Test
@@ -144,7 +142,7 @@ blocks:
           commands:
            - checkout
            - sem-version python 3.7
-           - cache restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
+           - cache restore
            - pip install -r requirements.txt --cache-dir .pip_cache
            # Test if project can be deployed securely.
            - python manage.py check --deploy --fail-level ERROR
