@@ -33,7 +33,7 @@ This application demonstrates CRUD operations using class based views in Django.
    ```
 7. Once all of the above command run sucessfully, We are ready to go. Start server by executing command
    ```
-   (virtualenv / conda environment) > python manage.py runserver
+   (virtualenv / conda environment) > python manage.py runserver 127.0.0.1:8732
    ```
   and visit the web browser with 'http://127.0.0.1:8732'
   
