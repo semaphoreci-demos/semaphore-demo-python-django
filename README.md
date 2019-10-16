@@ -35,7 +35,7 @@ This application demonstrates CRUD operations using class based views in Django.
    ```
    (virtualenv / conda environment) > python manage.py runserver
    ```
-  and visit the web browser with 'http://127.0.0.1:8000'
+  and visit the web browser with 'http://127.0.0.1:8732'
   
 ## Environment variables
 
