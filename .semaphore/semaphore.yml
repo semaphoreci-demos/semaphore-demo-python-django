@@ -125,7 +125,7 @@ blocks:
           - cache restore
           - pip install -r requirements.txt --cache-dir .pip_cache
           # Application is started.
-          - nohup python manage.py runserver &
+          - nohup python manage.py runserver 127.0.0.1:8732 &
       jobs:
         - name: Browser Test
           commands:
