@@ -146,8 +146,3 @@ blocks:
            - pip install -r requirements.txt --cache-dir .pip_cache
            # Test if project can be deployed securely.
            - python manage.py check --deploy --fail-level ERROR
-
-
-promotions:
-  - name: Deploy
-    pipeline_file: deploy.yml
