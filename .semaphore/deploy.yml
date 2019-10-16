@@ -1,0 +1,29 @@
+version: v1.0
+name: Deploy Django to PythonAnywhere
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+
+
+blocks:
+  - name: Deploy
+    task:
+      secrets:
+        - name: env
+        - name: ssh-key
+      env_vars:
+        - name: SSH_USER
+          value: tomfern
+
+      jobs:
+        - name: Deploy to PythonAnywhere
+          commands:
+            - checkout
+            - cat deployment.sh | envsubst > ~/deploy.sh
+            - chmod 0600 ~/.ssh/id_rsa_pa
+            - ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+            - ssh-add ~/.ssh/id_rsa_pa
+            - scp ~/.env $SSH_USER@$ssh.pythonanywhere.com:~
+            - scp ~/deploy.sh $SSH_USER@$ssh.pythonanywhere.com:~
+            - ssh $SSH_USER@$ssh.pythonanywhere.com bash deploy.sh
