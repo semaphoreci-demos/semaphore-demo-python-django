@@ -16,6 +16,11 @@ agent:
     type: e1-standard-2
     os_image: ubuntu1804
 
+global_job_config:
+  prologue:
+    commands:
+      - sem-version python 3.8
+
 # Blocks are the heart of a pipeline and are executed sequentially.
 # Each block has a task that defines one or more jobs. Jobs define the
 # commands to execute.
@@ -32,7 +37,6 @@ blocks:
         commands:
           # Set the python version.
           # See https://docs.semaphoreci.com/article/132-sem-service-managing-databases-and-services-on-linux
-          - sem-version python 3.7
           # Install Linux dependencies.
           - sudo apt-get update && sudo apt-get install -y python3-dev && sudo apt-get install default-libmysqlclient-dev
       jobs:
@@ -57,7 +61,6 @@ blocks:
       # This block executes code analysis tests with pylint.
       prologue:
         commands:
-          - sem-version python 3.7
           - checkout
           # At this point, the cache contains the downloaded packages ...
           - cache restore
@@ -81,7 +84,6 @@ blocks:
       # Django automatically creates a test database schema.
       prologue:
         commands:
-          - sem-version python 3.7
           # Start a MySQL database. On Semaphore, databases run in the same
           # environment as your code.
           # See https://docs.semaphoreci.com/article/32-ubuntu-1804-image#databases-and-services
@@ -113,7 +115,6 @@ blocks:
       # We start the application server here.
       prologue:
         commands:
-          - sem-version python 3.7
           # Start MySQL database.
           - sem-service start mysql
           # Install mysql client
@@ -141,7 +142,6 @@ blocks:
         - name: Deployment Checklist
           commands:
            - checkout
-           - sem-version python 3.7
            - cache restore
            - pip install -r requirements.txt --cache-dir .pip_cache
            # Test if project can be deployed securely.
