@@ -75,3 +75,8 @@ The example pipeline contains 5 blocks:
 * Run Security Tests
    * Runs security checklist with Django default deployment checklist
    
+## License
+
+Copyright (c) 2020 Rendered Text
+
+Distributed under the MIT License. See the file LICENSE.
