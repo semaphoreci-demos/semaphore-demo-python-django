@@ -1,4 +1,4 @@
-Django==2.1.7
+Django==2.2.24
 mysqlclient==1.4.2
 coverage==4.5.2
 django-nose==1.4.6
