@@ -70,13 +70,12 @@ blocks:
         - name: Pycodestyle
           commands:
             # list out files that are in directory and working tree
-            
+
             # grep -v will exclude the files being considered for pycodestyle
             # grep -E will matches files having .py extension
             # This command will help to pass required python files to pycodestyle
             # Pycodestylee with -E option will display only if there is any error
-            - git ls-files | grep -v 'migrations' | grep -v 'settings.py' | grep -v 'manage.py' | grep -E '.py$' |
-              xargs pycodestyle
+            - git ls-files | grep -v 'migrations' | grep -v 'settings.py' | grep -v 'manage.py' | grep -E '.py$' | xargs pycodestyle
 
   - name: "Run Unit Tests"
     task:
