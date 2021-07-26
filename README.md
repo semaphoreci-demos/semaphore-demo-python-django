@@ -1,3 +1,5 @@
+[![Build Status](https://devylaw.semaphoreci.com/badges/semaphore-demo-python-django/branches/develop.svg?style=shields)](https://devylaw.semaphoreci.com/projects/semaphore-demo-python-django)
+
 # A Semaphore demo CI/CD pipeline using Python Django
 
 Example Python Django application and CI/CD pipeline for integrating it with Semaphore 2.0.
