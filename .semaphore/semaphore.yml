@@ -66,6 +66,7 @@ blocks:
           - cache restore
           # ... so pip does the installation much faster.
           - pip install -r requirements.txt --cache-dir .pip_cache
+          - pip install pycodestyle
       jobs:
         - name: Pycodestyle
           commands:
