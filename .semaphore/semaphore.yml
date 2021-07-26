@@ -70,6 +70,7 @@ blocks:
         - name: Pycodestyle
           commands:
             # list out files that are in directory and working tree
+            
             # grep -v will exclude the files being considered for pycodestyle
             # grep -E will matches files having .py extension
             # This command will help to pass required python files to pycodestyle
