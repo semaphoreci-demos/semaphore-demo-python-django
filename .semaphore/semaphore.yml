@@ -58,7 +58,7 @@ blocks:
 
   - name: "Run Code Analysis"
     task:
-      # This block executes code analysis tests with pylint.
+      # This block executes code analysis tests with pycodestyle.
       prologue:
         commands:
           - checkout
@@ -67,15 +67,15 @@ blocks:
           # ... so pip does the installation much faster.
           - pip install -r requirements.txt --cache-dir .pip_cache
       jobs:
-        - name: Pylint
+        - name: Pycodestyle
           commands:
             # list out files that are in directory and working tree
-            # grep -v will exclude the files being considered for pylint
+            # grep -v will exclude the files being considered for pycodestyle
             # grep -E will matches files having .py extension
-            # This command will help to pass required python files to pylint along with pylint_djanog plugin
-            # Pylint with -E option will display only if there is any error
+            # This command will help to pass required python files to pycodestyle
+            # Pycodestylee with -E option will display only if there is any error
             - git ls-files | grep -v 'migrations' | grep -v 'settings.py' | grep -v 'manage.py' | grep -E '.py$' |
-              xargs pylint -E --load-plugins=pylint_django
+              xargs pycodestyle
 
   - name: "Run Unit Tests"
     task:
