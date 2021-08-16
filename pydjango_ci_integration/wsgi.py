@@ -18,3 +18,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pydjango_ci_integration.setting
 # load_dotenv('/path/to/env_file')
 
 application = get_wsgi_application()
+
+
+#Rocket has no reverse
