@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-import os
-import sys
+
+import os    #os provides the functions for interacting with the operating system.
+import sys   # system-specific parameter and functions
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pydjango_ci_integration.settings")
@@ -11,7 +12,7 @@ if __name__ == "__main__":
         # issue is really that Django is missing to avoid masking other
         # exceptions on Python 2.
         try:
-            import django
+            import django    #Django is the high-level python framework for creating a secure and maintainable websites.
         except ImportError:
             raise ImportError(
                 "Couldn't import Django. Are you sure it's installed and "
