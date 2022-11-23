@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 
     # Custom apps
     'tasks.apps.TasksConfig',
+    'lists',
 ]
 
 SITE_ID = 1
