@@ -1,6 +1,7 @@
 """
     Unit Test file for views
 """
+'''
 from django.test import TestCase
 
 from selenium import webdriver
@@ -18,3 +19,4 @@ class TaskListViewTest(TestCase):
         browser.get(SITE_URL)
         self.assertIn('Semaphore', browser.title)
         browser.close()
+'''
