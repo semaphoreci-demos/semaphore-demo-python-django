@@ -1,77 +1,283 @@
-# A Semaphore demo CI/CD pipeline using Python Django
 
-Example Python Django application and CI/CD pipeline for integrating it with Semaphore 2.0.
-This application demonstrates CRUD operations using class based views in Django. It also includes UI for all CRUD views.
 
-# Local project setup
+# Django CI/CD with Semaphore and PythonAnywhere
 
-1. Run following command to install python pre-requisite for mysqlclient python 
-   ```
-   sudo apt-get install python3-dev default-libmysqlclient-dev ### Ubutnu
-   
-   sudo yum install python3-devel mysql-devel ### Redhat / CentOS
-   
-   brew install mysql-connector-c ### mac os
-   ```
-   for more information on pre-requisite for mysqlclient, visit this page: (https://pypi.org/project/mysqlclient/)
+![Python Version](https://img.shields.io/badge/python-3.8-blue.svg)
+![Django Version](https://img.shields.io/badge/django-3.2-green.svg)
+![License](https://img.shields.io/github/license/guderian120/semaphore-demo-python-django)
+![Last Commit](https://img.shields.io/github/last-commit/guderian120/semaphore-demo-python-django)
+![Code Style](https://img.shields.io/badge/code%20style-pylint-yellow.svg)
+![Deployed](https://img.shields.io/badge/deployed-PythonAnywhere-lightgrey)
 
-2. Use anaconda / virtualenv for setting up this project
 
-3. Install pip requirements
-   ```
-   pip install -r requirements.txt
-   ```
-4. Create new mysql database
+# Django CI/CD with Semaphore and PythonAnywhere Live Project 
+[Live Project here ](https://guderian.pythonanywhere.com)
 
-5. Setup your database credentials and SITE_URL in settings.py file available inside ### pydjango_ci_integration folder
+This project demonstrates a complete CI/CD pipeline using **Django**, **Semaphore**, and **PythonAnywhere**. It covers development setup, continuous integration, and automated deployment using SSH.
 
-6. Once you have setup your database, Open command prompt pointing to the Root of the project directory and run following command to create application default database
-   ```
-   (virtualenv / conda environment) > python manage.py migrate
-   
-   (virtualenv / conda environment) > python manage.py createsuperuser
-   ```
-7. Once all of the above command run sucessfully, We are ready to go. Start server by executing command
-   ```
-   (virtualenv / conda environment) > python manage.py runserver 127.0.0.1:8732
-   ```
-  and visit the web browser with 'http://127.0.0.1:8732'
-  
-## Environment variables
+# Django CI/CD with Semaphore and PythonAnywhere
 
-The following environment variables can be set to override defaults:
+This project demonstrates a complete CI/CD pipeline using **Django**, **Semaphore**, and **PythonAnywhere**. It covers development setup, continuous integration, and automated deployment using SSH.
 
-- `SECRET_KEY`: Django [secret key](https://docs.djangoproject.com/en/2.2/ref/settings/#secret-key).
-- `DB_ENGINE`: Django database [backend](https://docs.djangoproject.com/en/2.2/ref/databases/).
-- `DB_NAME`: database name.
-- `DB_HOST`: database hostname.
-- `DB_PORT`: database port.
-- `DB_USER`: database user.
-- `DB_PASSWORD`: database password.
+---
 
-# CI/CD on Semaphore
+## 🧰 Project Setup
 
-Fork this repository and use it to [create a project](https://docs.semaphoreci.com/article/63-your-first-project)
-   ```
-   curl https://storage.googleapis.com/sem-cli-releases/get.sh | bash
-   sem connect <semaphore-organization-link> <semaphore-id> // found in Semaphore Dashboard
-   cd <project directory>
-   sem init
-   ```
-The CI pipeline will look like this:
+### 📦 Handling Dependencies
 
-![pipeline](https://github.com/semaphoreci-demos/semaphore-demo-python-django/blob/master/pydjango_ci_integration/pipepline.png)
+To avoid deprecated packages and resolve dependency issues with `mysqlclient`, make sure the following system packages are installed:
 
-The example pipeline contains 5 blocks:
+```bash
+sudo apt-get update
+sudo apt-get install python3-dev default-libmysqlclient-dev build-essential pkg-config libssl-dev
+```
 
-* Install Dependencies
-   * Installs pip requirements
-* Run Code Analysis
-   * Run code analysis / code linting with Pylint
-* Run Unit Tests
-   * Runs Unit Tests with unittest module for views and models file
-* Run Browser Tests
-   * Runs browser tests with python selenium webdriver
-* Run Security Tests
-   * Runs security checklist with Django default deployment checklist
-   
+Then install Python dependencies:
+
+```bash
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+```
+
+### 🔧 Swapping Test Runners
+
+If you're migrating from `django-nose` (which is no longer maintained), uninstall it:
+
+```bash
+pip uninstall django-nose nose
+```
+
+Switch to `pytest`:
+
+```bash
+pip install pytest pytest-django psycopg2-binary
+```
+
+Update your `settings.py` to use Django’s default test runner:
+
+```python
+# Remove or comment out these lines:
+# TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+# NOSE_ARGS = [...]
+
+# Add this:
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+```
+
+---
+
+## 🧪 CI with Semaphore
+
+This project uses Semaphore to automate testing and deployment. Below is the complete `semaphore.yml` configuration:
+
+```yaml
+version: v1.0
+name: Django CI/CD Pipeline
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu2004
+
+global_job_config:
+  prologue:
+    commands:
+      - sem-version python 3.8
+
+blocks:
+  - name: Install Dependencies
+    task:
+      prologue:
+        commands:
+          - sudo apt-get update && sudo apt-get install -y python3-dev default-libmysqlclient-dev build-essential pkg-config libssl-dev
+          - pip install --upgrade pip setuptools wheel
+      jobs:
+        - name: pip
+          commands:
+            - checkout
+            - cache restore
+            - pip download --cache-dir .pip_cache -r requirements.txt
+            - cache store
+      env_vars:
+        - name: DJANGO_TEST_ENV
+          value: 'true'
+
+  - name: Run Code Analysis
+    task:
+      jobs:
+        - name: Pylint
+          commands:
+            - checkout
+            - cache restore
+            - pip install -r requirements.txt --cache-dir .pip_cache
+            - git ls-files | grep -v 'migrations' | grep -v 'settings.py' | grep -v 'manage.py' | grep -E '.py$' | xargs pylint -E --load-plugins=pylint_django
+
+  - name: Run Unit Tests
+    task:
+      prologue:
+        commands:
+          - sem-service start mysql
+      jobs:
+        - name: Model Tests
+          commands:
+            - checkout
+            - cache restore
+            - pip install -r requirements.txt --cache-dir .pip_cache
+            - python manage.py test tasks.tests.test_models
+        - name: View Tests
+          commands:
+            - python manage.py test tasks.tests.test_views
+      env_vars:
+        - name: DJANGO_TEST_ENV
+          value: 'true'
+
+  - name: Run Browser Tests
+    task:
+      env_vars:
+        - name: DB_NAME
+          value: pydjango
+      prologue:
+        commands:
+          - sem-service start mysql
+          - sudo apt-get update && sudo apt-get install -y -qq mysql-client
+          - mysql --host=0.0.0.0 -uroot -e "create database $DB_NAME"
+          - checkout
+          - cache restore
+          - pip install -r requirements.txt --cache-dir .pip_cache
+          - nohup python manage.py runserver 127.0.0.1:8732 &
+      jobs:
+        - name: Browser Tests
+          commands:
+            - echo "Browser test command goes here"
+
+  - name: Run Security Checks
+    task:
+      jobs:
+        - name: Deployment Checklist
+          commands:
+            - checkout
+            - cache restore
+            - pip install -r requirements.txt --cache-dir .pip_cache
+            - python manage.py check --deploy --fail-level ERROR
+```
+
+---
+
+## 🛠 Conditional Database for Testing
+
+To ensure smooth CI testing even without internet access to the production database, the settings file uses SQLite for test runs:
+
+```python
+if os.environ.get('DJANGO_TEST_ENV') == 'true':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.mysql'),
+            'NAME': os.getenv('DB_NAME', 'None'),
+            'USER': os.getenv('DB_USER', 'None'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'None'),
+            'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+            'PORT': os.getenv('DB_PORT', '3306')
+        }
+    }
+```
+
+---
+
+## 🚀 Deployment to PythonAnywhere (CD)
+
+### 🐍 Setting up WSGI
+
+On PythonAnywhere, go to the **Web** tab and create a **manual configuration** web app. Then edit your `wsgi.py`:
+
+```python
+import os
+import sys
+from dotenv import load_dotenv
+
+path = '/home/YOUR_USERNAME/semaphore-demo-python-django'
+if path not in sys.path:
+    sys.path.append(path)
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'pydjango_ci_integration.settings'
+
+env_file = os.path.expanduser('~/.env-production')
+load_dotenv(env_file)
+
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
+```
+
+> Replace `YOUR_USERNAME` and project path accordingly.
+
+### 🔑 SSH Access (Requires Paid PythonAnywhere Account)
+
+To enable automated deployment:
+
+```bash
+ssh-copy-id YOUR_USERNAME@ssh.pythonanywhere.com
+```
+
+---
+
+## 🔄 CD with Semaphore
+
+### 🔐 Create Secrets
+
+1. In Semaphore, go to your project > **Settings > Secrets**
+2. Add:
+   - `SSH_KEY`: Your private SSH key
+   - `ENV_PRODUCTION`: Your `.env-production` file
+
+### 📜 `deploy.sh`
+
+Create a `deploy.sh` file:
+
+```bash
+cd $APP_URL
+git fetch --all
+git reset --hard origin/$SEMAPHORE_GIT_BRANCH
+
+source $ENV_FILE
+source ~/.virtualenvs/$APP_URL/bin/activate
+python manage.py migrate
+
+touch /var/www/"$(echo $APP_URL | sed 's/\./_/g')"_wsgi.py
+```
+
+### 🧱 Deployment Block (Semaphore UI)
+
+1. Add a new block: **Deploy to PythonAnywhere**
+2. Set environment variables:
+   - `SSH_USER = your_pythonanywhere_username`
+   - `APP_URL = your_username.pythonanywhere.com`
+   - `ENV_FILE = ~/.env-production`
+3. Add the two secrets: `SSH_KEY`, `ENV_PRODUCTION`
+4. Under Jobs:
+   - Name: `Push code`
+   - Commands:
+     ```bash
+     checkout
+     envsubst < deploy.sh > ~/deploy-production.sh
+     chmod 0600 ~/.ssh/id_rsa_pa
+     ssh-keyscan -H ssh.pythonanywhere.com >> ~/.ssh/known_hosts
+     ssh-add ~/.ssh/id_rsa_pa
+     scp -oBatchMode=yes ~/.env-production ~/deploy-production.sh $SSH_USER@ssh.pythonanywhere.com
+     ssh -oBatchMode=yes $SSH_USER@ssh.pythonanywhere.com bash deploy-production.sh
+     ```
+
+---
+
+## ✅ Final Thoughts
+
+With this setup:
+- Every push runs linting, unit tests, and security checks
+- Deployment is triggered via a CD pipeline using SSH
+- Environment-specific settings ensure test safety
+
+Feel free to fork, clone, and contribute to improve this CI/CD flow for Django deployments.

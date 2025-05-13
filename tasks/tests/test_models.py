@@ -6,6 +6,11 @@ from django.test import TestCase
 from tasks.models import Task
 
 
+test_data = { 
+"task_title":"Development",
+"task_description":"This task includes all the developments related activities for this project"
+}
+
 class TaskModelTest(TestCase):
     """
     Test Model class
